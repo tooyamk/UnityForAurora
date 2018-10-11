@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Aurora {
     public class Exporter : EditorWindow {
-        [MenuItem("Mitoia/Exporter")]
+        [MenuItem("Aurora/Exporter")]
         static void openExporter() {
             var exporter = (Exporter)GetWindow(typeof(Exporter));
         }
@@ -23,48 +23,17 @@ namespace Aurora {
                 if (meshFilter) {
                     var path = EditorUtility.SaveFilePanel("Save Data", Application.dataPath, "", "arr");
                     if (path.Length > 0) {
-                        var mesh = meshFilter.sharedMesh;
-                        var vertices = mesh.vertices;
-                        var normals = mesh.normals;
-                        var uv = mesh.uv;
-                        var triangles = mesh.triangles;
-                        MemoryStream ms = new MemoryStream();
-                        BinaryWriter writer = new BinaryWriter(ms);
+                        var data = new ExportData();
+                        data.meshes.Add(meshFilter.sharedMesh);
 
-                        writer.Write((int)vertices.Length);
-                        foreach (var v in vertices) {
-                            writer.Write((float)v.x);
-                            writer.Write((float)v.y);
-                            writer.Write((float)v.z);
-                        }
-
-                        writer.Write((int)normals.Length);
-                        foreach (var v in normals) {
-                            writer.Write((float)v.x);
-                            writer.Write((float)v.y);
-                            writer.Write((float)v.z);
-                        }
-
-                        writer.Write((int)uv.Length);
-                        foreach (var v in uv) {
-                            writer.Write((float)v.x);
-                            writer.Write((float)v.y);
-                        }
-
-                        writer.Write((int)triangles.Length);
-                        foreach (var i in triangles) {
-                            writer.Write((int)i);
-                        }
+                        MemoryStream ms = data.encode();
 
                         //if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                        Debug.Log(path);
-                        Debug.Log(_formatFilePath(path, "arr"));
                         FileStream fs = File.Create(_formatFilePath(path, "arr"));
 
                         ms.WriteTo(fs);
                         fs.Flush();
                         fs.Close();
-                        writer.Close();
                         ms.Close();
                     }
                 }
