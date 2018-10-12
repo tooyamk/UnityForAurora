@@ -12,33 +12,35 @@ namespace Aurora {
         }
 
         public void OnGUI() {
-            if (GUILayout.Button("Export Selection Mesh")) {
+            if (GUILayout.Button("Export Selected Mesh")) {
                 _exportSelected();
             }
         }
 
         private void _exportSelected() {
             if (Selection.activeGameObject) {
-                var meshFilter = Selection.activeGameObject.GetComponent<MeshFilter>();
-                if (meshFilter) {
-                    var path = EditorUtility.SaveFilePanel("Save Data", Application.dataPath, "", "arr");
-                    if (path.Length > 0) {
-                        var data = new ExportData();
-                        data.meshes.Add(meshFilter.sharedMesh);
+                var path = EditorUtility.SaveFilePanel("Save Data", Application.dataPath, "", "arr");
+                if (path.Length > 0) {
+                    var data = new ExportData();
 
-                        MemoryStream ms = data.encode();
+                    var meshFilter = Selection.activeGameObject.GetComponent<MeshFilter>();
+                    if (meshFilter) data.meshes.Add(meshFilter.sharedMesh);
 
-                        //if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                        FileStream fs = File.Create(_formatFilePath(path, "arr"));
+                    var smr = Selection.activeGameObject.GetComponent<SkinnedMeshRenderer>();
+                    if (smr) data.skinnedMeshes.Add(smr);
 
-                        ms.WriteTo(fs);
-                        fs.Flush();
-                        fs.Close();
-                        ms.Close();
-                    }
+                    MemoryStream ms = data.encode();
+
+                    //if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                    FileStream fs = File.Create(_formatFilePath(path, "arr"));
+
+                    ms.WriteTo(fs);
+                    fs.Flush();
+                    fs.Close();
+                    ms.Close();
                 }
             } else {
-                EditorUtility.DisplayDialog("Error", "No Selection Object", "OK");
+                EditorUtility.DisplayDialog("Error", "No Selected Object", "OK");
             }
         }
 
